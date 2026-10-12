@@ -62,7 +62,17 @@ services:
       - gluetun
     volumes:
       - abb-data:/data
+    networks:
+      - pangolin_frontend
+      - aiostreams
     restart: unless-stopped
+    
+networks:
+  pangolin_frontend:
+    external: true
+  aiostreams:
+    external: true
+    
 
 volumes:
   abb-data:
