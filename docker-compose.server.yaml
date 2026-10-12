@@ -36,9 +36,9 @@ services:
 
   audiobookbay-automated:
     image: ${APP_IMAGE:?Set APP_IMAGE, e.g. ghcr.io/yourname/audiobookbay-automated:latest}
-    container_name: audiobookbay-automated
-    ports:
-      - "${APP_PORT:-5078}:5078"
+    container_name: abba
+    expose:
+      - 5078
     environment:
       # Login (required on a public server)
       - APP_PASSWORD=${APP_PASSWORD:?Set APP_PASSWORD - the app is reachable from the internet}
