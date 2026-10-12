@@ -29,6 +29,9 @@ services:
       # DNS over HTTPS: DNS over TLS (the default) is blocked by many VPN servers.
       - DNS_UPSTREAM_RESOLVER_TYPE=doh
     # No ports published: the proxy is only reachable by the app.
+    networks:
+      - pangolin_frontend
+      - abb
     restart: unless-stopped
 
   audiobookbay-automated:
