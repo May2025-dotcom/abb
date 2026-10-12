@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}{% if query %}{{ query }} · {% endif %}Audiobooks{% endblock %}
+
+{% block content %}
+<form method="post" class="search" id="search-form">
+    <input type="search" name="query" value="{{ query }}" placeholder="Title, author or narrator"
+           aria-label="Search" autocomplete="off" required {% if not query %}autofocus{% endif %}>
+    <button type="submit" class="btn btn-primary" id="search-button">
+        <span>Search</span>
+    </button>
+</form>
+
+{% if error %}
+<p class="notice notice-error">{{ error }}</p>
+{% endif %}
+
+{% if books %}
+<div class="toolbar">
+    <p class="muted"><span id="result-count">{{ books|length }}</span> results</p>
+    <div class="filters" id="filters">
+        <select data-filter="language" aria-label="Language"><option value="">Any language</option></select>
+        <select data-filter="format" aria-label="Format"><option value="">Any format</option></select>
+        <select data-filter="bitrate" aria-label="Bitrate"><option value="">Any bitrate</option></select>
+        <select id="filter-size" aria-label="Size">
+            <option value="">Any size</option>
+            <option value="0-500">Under 500 MB</option>
+            <option value="500-1024">500 MB – 1 GB</option>
+            <option value="1024-">Over 1 GB</option>
+        </select>
+        <select id="filter-age" aria-label="Posted">
+            <option value="">Any date</option>
+            <option value="30">Last month</option>
+            <option value="365">Last year</option>
+            <option value="1825">Last 5 years</option>
+        </select>
+        <button type="button" class="btn btn-quiet" id="clear-filters" hidden>Clear</button>
+    </div>
+</div>
+
+<ul class="results" id="results"{% if has_torbox %} data-torbox{% endif %}>
+    {% for book in books %}
+    <li class="result"
+        data-language="{{ book.language }}"
+        data-format="{{ book.format }}"
+        data-bitrate="{{ book.bitrate }}"
+        data-size="{{ book.file_size }}"
+        data-date="{{ book.post_date }}"
+        data-link="{{ book.link }}"
+        data-title="{{ book.title }}">
+        <img class="cover" loading="lazy" alt=""
+             src="{{ book.cover or url_for('static', filename='images/default_cover.jpg') }}"
+             data-fallback="{{ url_for('static', filename='images/default_cover.jpg') }}"
+             onerror="this.onerror=null;this.src=this.dataset.fallback">
+        <div class="info">
+            <h3 class="title">{{ book.title }}</h3>
+            <p class="meta">
+                {% for v in [book.format, book.bitrate, book.file_size, book.language] if v and v != 'N/A' %}
+                <span>{{ v }}</span>
+                {% endfor %}
+            </p>
+            {% if book.post_date != 'N/A' %}<p class="meta muted">Posted {{ book.post_date }}</p>{% endif %}
+            <div class="actions">
+                {% if has_client %}
+                <button type="button" class="btn btn-primary" data-action="send">Send to server</button>
+                {% endif %}
+                <a class="btn {% if not has_client %}btn-primary{% endif %}" data-action="open" href="#">Open magnet</a>
+                <button type="button" class="btn" data-action="copy">Copy magnet</button>
+                <a class="btn" href="{{ url_for('magnet_file', link=book.link, title=book.title) }}" title="For a qBittorrent watched folder">Download .magnet</a>
+                <a class="btn btn-quiet" href="{{ book.link }}" target="_blank" rel="noopener">Details ↗</a>
+            </div>
+            {% if has_torbox %}
+            <div class="tb" data-tb>
+                <button type="button" class="btn" data-action="tb-check">TorBox</button>
+            </div>
+            {% endif %}
+        </div>
+    </li>
+    {% endfor %}
+</ul>
+<p class="empty muted" id="no-matches" hidden>No results match these filters.</p>
+
+{% elif searched and not error %}
+<p class="empty muted">No results for “{{ query }}”.</p>
+
+{% elif not searched %}
+<p class="empty muted">
+    Search AudioBook Bay, then
+    {% if has_client %}send a book to your download client or{% endif %}
+    open the magnet link in the torrent app on this device.
+</p>
+{% endif %}
+{% endblock %}

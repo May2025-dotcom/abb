@@ -1,0 +1,44 @@
+services:
+  # NordVPN (OpenVPN) with a built-in HTTP proxy. Only the app's AudioBook Bay
+  # traffic uses it; nothing else on your machine is affected.
+  # Put your NordVPN service credentials in ./vpn/vpn.env (see vpn/README.txt).
+  gluetun:
+    image: qmcgaw/gluetun
+    container_name: abb-vpn
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    env_file:
+      - ./vpn/vpn.env
+    environment:
+      - VPN_SERVICE_PROVIDER=nordvpn
+      - VPN_TYPE=openvpn
+      - HTTPPROXY=on
+      # DNS over HTTPS (port 443). The default, DNS over TLS on port 853, is
+      # blocked by many VPN servers, which makes every lookup time out and the
+      # VPN restart in a loop.
+      - DNS_UPSTREAM_RESOLVER_TYPE=doh
+    # No ports published: the proxy is only reachable by the app, not your LAN.
+    restart: unless-stopped
+
+  audiobookbay-automated:
+    build: .
+    image: audiobookbay-automated:local
+    container_name: audiobookbay-automated
+    ports:
+      - "5078:5078"
+    # Other settings come from .env (see .env.example).
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      # All AudioBook Bay requests go through the VPN. If the VPN is down,
+      # requests fail instead of using your home connection.
+      - ABB_PROXY=http://gluetun:8888
+    depends_on:
+      - gluetun
+    # Caches and the rate-limit pause survive restarts and rebuilds.
+    volumes:
+      - ./data:/data
+    restart: unless-stopped
