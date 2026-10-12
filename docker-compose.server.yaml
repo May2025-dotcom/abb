@@ -64,13 +64,13 @@ services:
       - abb-data:/data
     networks:
       - pangolin_frontend
-      - aiostreams
+      - abb
     restart: unless-stopped
     
 networks:
   pangolin_frontend:
     external: true
-  aiostreams:
+  abb:
     external: true
     
 
