@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
+    <title>{% block title %}Audiobooks{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
+</head>
+<body>
+    <header class="topbar">
+        <a href="{{ url_for('search') }}" class="brand">Audiobooks</a>
+        {% if request.endpoint != 'login' %}
+        <nav>
+            <a href="{{ url_for('search') }}" class="{% if request.endpoint == 'search' %}active{% endif %}">Search</a>
+            {% if has_torbox %}
+            <a href="{{ url_for('torbox_page') }}" class="{% if request.endpoint == 'torbox_page' %}active{% endif %}">TorBox{% if torbox_ready_count %} <span class="badge" title="Ready to download">{{ torbox_ready_count }}</span>{% endif %}</a>
+            {% endif %}
+            {% if has_client %}
+            <a href="{{ url_for('status') }}" class="{% if request.endpoint == 'status' %}active{% endif %}">Downloads</a>
+            {% endif %}
+            {% if nav_link_name and nav_link_url %}
+            <a href="{{ nav_link_url }}" target="_blank" rel="noopener">{{ nav_link_name }} ↗</a>
+            {% endif %}
+            {% if auth_enabled and session.get('auth') %}
+            <form method="post" action="{{ url_for('logout') }}" class="nav-form">
+                <button type="submit">Log out</button>
+            </form>
+            {% endif %}
+        </nav>
+        {% endif %}
+    </header>
+
+    <main class="page">
+        {% block content %}{% endblock %}
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <dialog id="magnet-dialog">
+        <form method="dialog">
+            <h2>Magnet link</h2>
+            <p class="muted">Your browser blocked automatic copying. Select and copy it below.</p>
+            <textarea id="magnet-text" rows="5" readonly></textarea>
+            <div class="dialog-actions">
+                <button class="btn">Close</button>
+            </div>
+        </form>
+    </dialog>
+</body>
+</html>

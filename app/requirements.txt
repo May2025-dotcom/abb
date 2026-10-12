@@ -1,0 +1,9 @@
+flask
+requests
+curl_cffi
+beautifulsoup4
+qbittorrent-api
+python-dotenv
+transmission-rpc
+deluge-web-client
+waitress
